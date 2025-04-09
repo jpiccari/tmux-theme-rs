@@ -4,8 +4,6 @@ use std::str::FromStr;
 
 use crate::StatusContext;
 use crate::themes::Style;
-use duct::cmd;
-use regex::Regex;
 
 #[derive(Debug)]
 enum BatteryStatus {
@@ -111,8 +109,8 @@ pub fn batt_status(ctx: &StatusContext, buf: &mut impl Write) {
 
 #[cfg(target_os = "macos")]
 fn os_batt_status() -> Result<BatteryStatus, std::io::Error> {
-    let status = cmd!("pmset", "-g", "batt").read()?;
-    let caps = match Regex::new(r"(\d+)%;\s+([^;]+;)\s?(\d+:\d+)?") {
+    let status = duct::cmd!("pmset", "-g", "batt").read()?;
+    let caps = match regex::Regex::new(r"(\d+)%;\s+([^;]+;)\s?(\d+:\d+)?") {
         Ok(it) => it,
         Err(_) => todo!(),
     }
@@ -143,6 +141,11 @@ fn os_batt_status() -> Result<BatteryStatus, std::io::Error> {
     };
 
     Ok(batt_status)
+}
+
+#[cfg(target_os = "linux")]
+fn os_batt_status() -> Result<BatteryStatus, std::io::Error> {
+    todo!()
 }
 
 fn batt_icon(status: &BatteryStatus) -> char {
