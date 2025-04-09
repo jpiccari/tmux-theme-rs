@@ -79,6 +79,11 @@ impl FromStr for Duration {
             None => Err(DurationError::InvalidDurationString),
         }
     }
+
+    #[cfg(target_os = "linux")]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        todo!()
+    }
 }
 
 pub fn batt_status(ctx: &StatusContext, buf: &mut impl Write) {
