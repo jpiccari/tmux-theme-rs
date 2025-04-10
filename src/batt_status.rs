@@ -81,8 +81,9 @@ impl FromStr for Duration {
     }
 
     #[cfg(target_os = "linux")]
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+    fn from_str(_s: &str) -> Result<Self, Self::Err> {
+        // No duration format string in linux. not a great interface looking back on it....
+        Err(DurationError::InvalidDurationString)
     }
 }
 
@@ -150,7 +151,22 @@ fn os_batt_status() -> Result<BatteryStatus, std::io::Error> {
 
 #[cfg(target_os = "linux")]
 fn os_batt_status() -> Result<BatteryStatus, std::io::Error> {
-    todo!()
+    use std::fs::read_to_string;
+
+    let percent_charge = read_to_string("/sys/class/power_supply/BAT0/capacity")?
+        .parse::<u8>()
+        .unwrap();
+
+    match &read_to_string("/sys/class/power_supply/BAT0/status")?[..=3] {
+        "Dis" => Ok(BatteryStatus::Discharging {
+            percent_charge,
+            time_remaining: None,
+        }),
+        _ => Ok(BatteryStatus::Charging {
+            percent_charge,
+            time_remaining: None,
+        }),
+    }
 }
 
 fn batt_icon(status: &BatteryStatus) -> char {
