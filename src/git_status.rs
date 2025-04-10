@@ -100,10 +100,7 @@ fn print_status(theme: &Theme, repo: &Repository, buf: &mut impl Write) {
 
 fn ref_to_id(repo: &Repository, reference: &Reference) -> Option<Oid> {
     let name = reference.name().unwrap();
-    match repo.refname_to_id(name) {
-        Ok(oid) => Some(oid),
-        Err(_) => None,
-    }
+    repo.refname_to_id(name).ok()
 }
 
 enum ReferenceType {
